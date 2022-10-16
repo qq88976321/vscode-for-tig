@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+# This is a wrapper to let tig open file in vscode.
+#
+# tig opens files in two different ways:
+#   1. without line number: `$TIG_EDITOR <file>`, e.g. vim tig.c
+#   2. with line number `$TIG_EDITOR +<line> <file>`, e.g. vim +10 tig.c
+#
+# However, code uses the following format to open file with line number: `code --goto <file:line[:character]>`,
+# so we need to convert the options
+
+# exit on an error or if an unset variable is referenced.
+set -eu
+
+# when used in combination with set -e, pipefail will make a script exit if any command in a pipeline errors.
+set -o pipefail
+
+if [[ "$#" -eq 1 ]]; then
+    # 1. open file without line number
+    FILE="$1"
+    LINE=0
+
+    code --goto "$FILE":"$LINE"
+elif [[ "$#" -eq 2 ]]; then
+    # 2. open file with line number
+
+    # remove the '+' prefix before line number
+    LINE=${1#+}
+    FILE="$2"
+
+    code --goto "$FILE":"$LINE"
+else
+    echo "Usage: $0 [+line] <file>" >&2
+    exit 1
+fi
